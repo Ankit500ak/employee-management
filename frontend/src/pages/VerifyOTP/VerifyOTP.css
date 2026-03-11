@@ -1,0 +1,405 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+
+:root {
+    --bg: #0d0f12;
+    --surface: #141720;
+    --surface-2: #1c2030;
+    --border: #272c3d;
+    --border-lit: #3a4260;
+    --accent: #4f8ef7;
+    --accent-dim: #2a4a8a;
+    --danger: #f74f4f;
+    --success: #2dd4a0;
+    --text-1: #e8ecf5;
+    --text-2: #8b93ad;
+    --text-3: #4d5570;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+    --radius: 8px;
+    --t: 200ms ease;
+}
+
+/* ── Shell ────────────────────────────────────────────────────── */
+.page {
+    min-height: 100vh;
+    background: var(--bg);
+    background-image:
+        radial-gradient(ellipse 70% 55% at 50% -5%, rgba(79, 142, 247, .13) 0%, transparent 65%),
+        radial-gradient(ellipse 35% 25% at 85% 90%, rgba(79, 142, 247, .05) 0%, transparent 60%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--sans);
+    color: var(--text-1);
+    padding: 48px 16px;
+    box-sizing: border-box;
+}
+
+/* ── Wrapper ──────────────────────────────────────────────────── */
+.otp-wrap {
+    width: 100%;
+    max-width: 420px;
+    animation: cardIn .35s ease;
+}
+
+@keyframes cardIn {
+    from {
+        opacity: 0;
+        transform: translateY(14px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ── Logo ─────────────────────────────────────────────────────── */
+.otp-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 28px;
+}
+
+.otp-logo-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    background: linear-gradient(135deg, var(--accent-dim), var(--accent));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(79, 142, 247, .3);
+}
+
+.otp-logo-text {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: .08em;
+    color: var(--text-2);
+}
+
+/* ── Card ─────────────────────────────────────────────────────── */
+.otp-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.otp-card-bar {
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent) 0%, transparent 100%);
+}
+
+.otp-card-body {
+    padding: 32px 32px 24px;
+}
+
+/* ── Heading ──────────────────────────────────────────────────── */
+.otp-eyebrow {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 7px;
+}
+
+.otp-title {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -.015em;
+    margin: 0 0 4px;
+}
+
+.otp-subtitle {
+    font-size: 13px;
+    color: var(--text-2);
+    margin: 0 0 28px;
+    line-height: 1.5;
+}
+
+/* ── Step indicator ───────────────────────────────────────────── */
+.otp-steps {
+    display: flex;
+    align-items: center;
+    margin-bottom: 28px;
+}
+
+.otp-step {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex: 1;
+}
+
+.otp-step-dot {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 500;
+    flex-shrink: 0;
+}
+
+.otp-step-dot.done {
+    background: var(--success);
+    color: #fff;
+    font-size: 11px;
+}
+
+.otp-step-dot.active {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 0 0 3px rgba(79, 142, 247, .2);
+}
+
+.otp-step-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+
+.otp-step.done-step .otp-step-label {
+    color: var(--text-3);
+}
+
+.otp-step.active-step .otp-step-label {
+    color: var(--text-2);
+}
+
+.otp-step-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+    margin: 0 8px;
+    max-width: 40px;
+}
+
+.otp-step-line.done-line {
+    background: var(--success);
+}
+
+/* ── Form ─────────────────────────────────────────────────────── */
+.otp-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.otp-field {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.otp-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--text-3);
+}
+
+.otp-input {
+    width: 100%;
+    box-sizing: border-box;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text-1);
+    font-family: var(--mono);
+    font-size: 20px;
+    font-weight: 500;
+    letter-spacing: .35em;
+    text-align: center;
+    padding: 14px 16px;
+    outline: none;
+    transition: border-color var(--t), box-shadow var(--t);
+}
+
+.otp-input::placeholder {
+    color: var(--text-3);
+    font-size: 14px;
+    letter-spacing: .05em;
+}
+
+.otp-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(79, 142, 247, .12);
+}
+
+/* ── Submit ───────────────────────────────────────────────────── */
+.otp-submit {
+    margin-top: 4px;
+    width: 100%;
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 500;
+    color: #fff;
+    background: var(--accent);
+    border: none;
+    border-radius: var(--radius);
+    padding: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background var(--t), transform var(--t), box-shadow var(--t);
+    box-shadow: 0 4px 20px rgba(79, 142, 247, .25);
+}
+
+.otp-submit:hover:not(:disabled) {
+    background: #6aa2ff;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 24px rgba(79, 142, 247, .35);
+}
+
+.otp-submit:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.otp-submit:disabled {
+    background: var(--accent-dim);
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+/* Spinner */
+.otp-spinner {
+    width: 13px;
+    height: 13px;
+    border: 2px solid rgba(255, 255, 255, .3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ── Resend button ────────────────────────────────────────────── */
+.otp-resend {
+    margin-top: 14px;
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: .04em;
+    color: var(--text-3);
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 9px 16px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    transition: color var(--t), border-color var(--t);
+    align-self: flex-start;
+}
+
+.otp-resend:hover:not(:disabled) {
+    color: var(--accent);
+    border-color: var(--accent-dim);
+}
+
+.otp-resend:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+}
+
+/* ── Info banner ──────────────────────────────────────────────── */
+.otp-info-banner {
+    margin-top: 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: rgba(79, 142, 247, .06);
+    border: 1px solid rgba(79, 142, 247, .2);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--text-2);
+}
+
+.otp-info-banner svg {
+    flex-shrink: 0;
+    margin-top: 1px;
+    color: var(--accent);
+}
+
+/* ── Alerts ───────────────────────────────────────────────────── */
+.otp-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    border-radius: var(--radius);
+    font-size: 13px;
+    padding: 11px 14px;
+    margin-top: 14px;
+    animation: slideIn .2s ease;
+}
+
+.otp-alert-error {
+    background: rgba(247, 79, 79, .08);
+    border: 1px solid rgba(247, 79, 79, .28);
+    color: #f98a8a;
+}
+
+.otp-alert-success {
+    background: rgba(45, 212, 160, .08);
+    border: 1px solid rgba(45, 212, 160, .28);
+    color: var(--success);
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ── Footer ───────────────────────────────────────────────────── */
+.otp-card-footer {
+    padding: 16px 32px 22px;
+    border-top: 1px solid var(--border);
+    background: var(--surface-2);
+}
+
+.otp-footer-text {
+    font-size: 12px;
+    color: var(--text-3);
+    margin: 0;
+    text-align: center;
+}
+
+.otp-footer-text a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color var(--t);
+}
+
+.otp-footer-text a:hover {
+    color: #6aa2ff;
+    text-decoration: underline;
+}
