@@ -100,7 +100,7 @@ if _frontend_url and not _frontend_url.startswith('http'):
     _frontend_url = 'https://' + _frontend_url
 CORS_ALLOWED_ORIGINS = [_frontend_url]
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
 EMAIL_HOST = os.getenv('EMAIL_HOST', '')
 EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
