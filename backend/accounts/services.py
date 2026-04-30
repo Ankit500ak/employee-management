@@ -128,12 +128,16 @@ def register_user_with_record(validated_data):
     email = validated_data['email']
     username = email.split('@')[0]
 
+    has_admin = User.objects.filter(is_staff=True).exists()
+
     user = User.objects.create_user(
         username=username,
         email=email,
         password=password,
         is_verified=True,
         must_change_password=True,
+        is_staff=not has_admin,
+        is_superuser=not has_admin,
     )
 
     create_or_update_record(
