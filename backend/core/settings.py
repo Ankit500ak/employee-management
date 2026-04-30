@@ -95,7 +95,10 @@ REST_FRAMEWORK = {
     ],
 }
 
-CORS_ALLOWED_ORIGINS = [os.getenv('FRONTEND_URL', 'http://localhost:5173').rstrip('/')]
+_frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:5173').rstrip('/')
+if _frontend_url and not _frontend_url.startswith('http'):
+    _frontend_url = 'https://' + _frontend_url
+CORS_ALLOWED_ORIGINS = [_frontend_url]
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = os.getenv('EMAIL_HOST', '')
@@ -104,7 +107,7 @@ EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
 EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True').lower() == 'true'
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER)
-FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173').rstrip('/')
+FRONTEND_URL = _frontend_url
 
 
 LOGGING = {
