@@ -104,6 +104,7 @@ CORS_ALLOWED_ORIGINS = [_frontend_url]
 EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
 ANYMAIL = {
     "RESEND_API_KEY": os.getenv("RESEND_API_KEY", ""),
+    "SENDGRID_API_KEY": os.getenv("SENDGRID_API_KEY", ""),
 }
 EMAIL_HOST = os.getenv('EMAIL_HOST', '')
 EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
