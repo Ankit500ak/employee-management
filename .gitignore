@@ -1,20 +1,30 @@
-# Python
+# Python / Django
 __pycache__/
 *.py[cod]
+*$py.class
 *.sqlite3
 .venv/
 venv/
+env/
 .env
 .pytest_cache/
-
-# Django
 media/
 staticfiles/
+*.log
 
-# Node
+# Node / React (Frontend)
 frontend/node_modules/
 frontend/dist/
+frontend/build/
+frontend/.env
+frontend/.env.local
+frontend/.env.*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# IDE
+# IDE / OS
 .vscode/
+.idea/
 .DS_Store
+*.swp
