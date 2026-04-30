@@ -23,6 +23,9 @@ INSTALLED_APPS = [
     'records',
     'imports',
     'notifications',
+    'tasks',
+    'teams',
+    'chat',
 ]
 
 MIDDLEWARE = [
@@ -103,9 +106,7 @@ EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True').lower() == 'true'
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER)
 FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173')
 
-# ---------------------------------------------------------------------------
-# Logging — show email / import / auth activity in the runserver console
-# ---------------------------------------------------------------------------
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,

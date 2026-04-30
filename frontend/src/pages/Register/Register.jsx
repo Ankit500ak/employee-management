@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { requestOtp } from '../../services/authApi'
 import './Register.css'
 
-/* ── Icons ────────────────────────────────────────────────────── */
+
 const IconLogo = () => (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
         <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
@@ -26,7 +26,7 @@ const IconAlert = () => (
     </svg>
 )
 
-/* ── Field ────────────────────────────────────────────────────── */
+
 function Field({ label, type = 'text', value, onChange, placeholder, required, autoComplete }) {
     return (
         <div className="reg-field">
@@ -47,7 +47,7 @@ function Field({ label, type = 'text', value, onChange, placeholder, required, a
     )
 }
 
-/* ── Component ────────────────────────────────────────────────── */
+
 function Register() {
     const [form, setForm] = useState({ full_name: '', email: '', phone: '', address: '', dob: '' })
     const [error, setError] = useState('')

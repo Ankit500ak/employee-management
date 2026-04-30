@@ -51,7 +51,6 @@ class ChangePasswordView(APIView):
         serializer.is_valid(raise_exception=True)
         user = request.user
         if user.must_change_password:
-            # First-time login: user already proved identity by logging in
             pass
         else:
             old_password = serializer.validated_data.get('old_password', '')
@@ -109,7 +108,7 @@ class MeView(APIView):
         return Response(UserSerializer(request.user).data)
 
 
-# ── Access Request views ──────────────────────────────────────────
+
 
 class RequestAccessView(APIView):
     """Child user requests admin access from their parent."""
@@ -120,11 +119,11 @@ class RequestAccessView(APIView):
             return Response({'detail': 'You already have admin access.'}, status=status.HTTP_400_BAD_REQUEST)
         approver = user.parent
         if not approver:
-            # Fallback: assign the first admin user as the approver
+
             approver = User.objects.filter(is_staff=True).order_by('id').first()
         if not approver:
             return Response({'detail': 'No admin found to handle your request.'}, status=status.HTTP_400_BAD_REQUEST)
-        # Persist the parent so future requests go to the same admin
+
         if not user.parent:
             user.parent = approver
             user.save(update_fields=['parent'])
@@ -132,7 +131,7 @@ class RequestAccessView(APIView):
         if existing:
             return Response({'detail': 'You already have a pending request.'}, status=status.HTTP_400_BAD_REQUEST)
         ar = AccessRequest.objects.create(requester=user, approver=approver)
-        # Send email to the parent
+
         from accounts.services import send_access_request_email
         send_access_request_email(ar)
         return Response(AccessRequestSerializer(ar).data, status=status.HTTP_201_CREATED)
@@ -183,3 +182,13 @@ class ResolveAccessRequestView(APIView):
             ar.save(update_fields=['status', 'resolved_at'])
             return Response({'detail': f'Request from {ar.requester.email} denied.'})
         return Response({'detail': 'Invalid action. Use "approve" or "deny".'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class MyCreatedUsersView(APIView):
+    """Get all users created by the current admin user."""
+
+    def get(self, request):
+        if not request.user.is_staff:
+            return Response({'detail': 'Admin access required.'}, status=status.HTTP_403_FORBIDDEN)
+        users = request.user.children.all()
+        return Response(UserSerializer(users, many=True).data)

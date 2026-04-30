@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { getMyRecord, updateMyRecord } from '../../services/recordApi'
 import './EditRecord.css'
 
-/* ── Icons ────────────────────────────────────────────────────── */
+
 const IconSave = () => (
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
         <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
@@ -20,7 +20,14 @@ const IconAlert = () => (
     </svg>
 )
 
-/* ── Field component ──────────────────────────────────────────── */
+const IconArrowLeft = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+    </svg>
+)
+
+
 function Field({ label, value, onChange, placeholder, required }) {
     return (
         <div className="er-field">
@@ -39,7 +46,7 @@ function Field({ label, value, onChange, placeholder, required }) {
     )
 }
 
-/* ── Component ────────────────────────────────────────────────── */
+
 function EditRecord() {
     const [form, setForm] = useState({ full_name: '', phone: '', address: '', dob: '' })
     const [error, setError] = useState('')
@@ -85,7 +92,14 @@ function EditRecord() {
             <div className="er-card">
                 <div className="er-card-bar" />
 
-                <div className="er-header">
+                <div className="er-header" style={{ position: 'relative' }}>
+                    <button 
+                        onClick={() => navigate('/dashboard')} 
+                        style={{ position: 'absolute', top: '0px', left: '-12px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#64748b' }}
+                        title="Go Back"
+                    >
+                        <IconArrowLeft />
+                    </button>
                     <p className="er-eyebrow">My Profile</p>
                     <h2 className="er-title">Edit Record</h2>
                     <p className="er-subtitle">Update your personal information below.</p>

@@ -39,7 +39,7 @@ const IconMail = () => (
     </svg>
 )
 
-/* ── Component ────────────────────────────────────────────────── */
+
 function VerifyOTP() {
     const [otpCode, setOtpCode] = useState('')
     const [error, setError] = useState('')

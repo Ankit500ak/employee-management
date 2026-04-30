@@ -1,0 +1,533 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap');
+
+:root {
+    --bg: #0a0c10;
+    --bg-elevated: #0f1117;
+    --surface: #141720;
+    --surface-2: #1a1e2e;
+    --border: #1f2437;
+    --border-lit: #2d3454;
+    --accent: #4f8ef7;
+    --accent-soft: rgba(79, 142, 247, .12);
+    --accent-dim: #2a4a8a;
+    --danger: #ef4444;
+    --danger-soft: rgba(239, 68, 68, .1);
+    --success: #22c55e;
+    --success-soft: rgba(34, 197, 94, .1);
+    --amber: #f59e0b;
+    --amber-soft: rgba(245, 158, 11, .1);
+    --text-1: #e8ecf5;
+    --text-2: #8b93ad;
+    --text-3: #4d5570;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+    --radius: 10px;
+    --radius-lg: 14px;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, .3), 0 1px 3px rgba(0, 0, 0, .2);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, .4), 0 1px 3px rgba(0, 0, 0, .2);
+    --t: 180ms ease;
+}
+
+/* ── Shell ────────────────────────────────────────────────────── */
+.my-tasks-shell {
+    min-height: 100vh;
+    background: var(--bg);
+    background-image:
+        radial-gradient(ellipse 60% 45% at 50% -5%, rgba(79, 142, 247, .08) 0%, transparent 55%),
+        radial-gradient(circle at 90% 80%, rgba(79, 142, 247, .03) 0%, transparent 35%);
+    font-family: var(--sans);
+    color: var(--text-1);
+    display: flex;
+    flex-direction: column;
+}
+
+/* ── Main area ────────────────────────────────────────────────── */
+.my-tasks-main {
+    max-width: 1060px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 40px 40px 32px;
+    flex: 1;
+    box-sizing: border-box;
+}
+
+/* ── Header ───────────────────────────────────────────────────── */
+.my-tasks-header {
+    margin-bottom: 36px;
+    animation: fadeInDown .35s ease;
+}
+
+.my-tasks-title {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -.025em;
+    margin: 0 0 8px;
+    background: linear-gradient(135deg, var(--text-1) 40%, var(--accent) 120%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.my-tasks-subtitle {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: .04em;
+    color: var(--text-3);
+    margin: 0;
+}
+
+/* ── Error Toast ──────────────────────────────────────────────── */
+.my-tasks-error {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    background: var(--danger-soft);
+    border: 1px solid rgba(239, 68, 68, .25);
+    color: #fca5a5;
+    font-size: 13px;
+    margin-bottom: 24px;
+    animation: fadeInDown .25s ease;
+}
+
+/* ── Section ──────────────────────────────────────────────────── */
+.my-tasks-section {
+    margin-bottom: 32px;
+}
+
+/* ── Tabs ─────────────────────────────────────────────────────── */
+.my-tasks-tabs {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 12px;
+}
+
+.my-tasks-tab {
+    padding: 10px 20px;
+    background: transparent;
+    border: none;
+    color: var(--text-2);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: var(--radius);
+    transition: all 0.2s ease;
+    font-family: var(--sans);
+}
+
+.my-tasks-tab:hover {
+    color: var(--text-1);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.my-tasks-tab.active {
+    background: var(--accent-soft);
+    color: var(--accent);
+    box-shadow: 0 0 0 1px rgba(79, 142, 247, 0.2);
+}
+
+.my-tasks-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+
+.my-tasks-section-title {
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -.01em;
+    margin: 0;
+}
+
+/* ── Tasks List ───────────────────────────────────────────────── */
+.my-tasks-list {
+    display: grid;
+    gap: 14px;
+    animation: fadeInUp .35s ease;
+}
+
+.my-tasks-task-card {
+    background: linear-gradient(145deg, rgba(30, 35, 50, 0.7) 0%, rgba(20, 23, 32, 0.8) 100%);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 16px;
+    padding: 24px;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.my-tasks-task-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.my-tasks-task-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(255, 255, 255, 0.15);
+    background: linear-gradient(145deg, rgba(35, 40, 55, 0.8) 0%, rgba(25, 28, 40, 0.9) 100%);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4), 0 0 24px rgba(79, 142, 247, 0.15);
+}
+
+.my-tasks-task-card:hover::before {
+    opacity: 1;
+}
+
+.my-tasks-task-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.my-tasks-task-title-section {
+    flex: 1;
+    min-width: 0;
+}
+
+.my-tasks-task-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0 0 6px;
+    color: #fff;
+    letter-spacing: -.02em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.my-tasks-task-creator {
+    font-family: var(--sans);
+    font-size: 12px;
+    color: var(--text-2);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.my-tasks-task-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 100px;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+    flex-shrink: 0;
+}
+
+.my-tasks-task-badge--pending {
+    background: rgba(245, 158, 11, .15);
+    color: var(--amber);
+}
+
+.my-tasks-task-badge--in-progress {
+    background: rgba(79, 142, 247, .15);
+    color: var(--accent);
+}
+
+.my-tasks-task-badge--completed {
+    background: rgba(34, 197, 94, .15);
+    color: var(--success);
+}
+
+.my-tasks-task-badge--cancelled {
+    background: rgba(239, 68, 68, .15);
+    color: var(--danger);
+}
+
+.my-tasks-task-description {
+    font-size: 14px;
+    color: var(--text-2);
+    line-height: 1.6;
+    margin: 16px 0 24px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.my-tasks-task-meta {
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin: 0 0 20px 0;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-2);
+    border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.my-tasks-task-footer {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.my-tasks-status-select {
+    flex: 1;
+    padding: 10px 14px;
+    background: rgba(20, 23, 32, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius);
+    color: var(--text-1);
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238b93ad' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+}
+
+.my-tasks-status-select:hover:not(:disabled) {
+    border-color: rgba(79, 142, 247, 0.5);
+    background-color: rgba(30, 35, 50, 0.9);
+}
+
+.my-tasks-status-select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(79, 142, 247, 0.2);
+}
+
+.my-tasks-status-select option {
+    background: var(--surface);
+    color: var(--text-1);
+    padding: 10px;
+}
+
+.my-tasks-status-select:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+}
+
+.my-tasks-btn-details {
+    padding: 10px 20px;
+    background: var(--accent-soft);
+    border: 1px solid rgba(79, 142, 247, 0.3);
+    color: var(--accent);
+    border-radius: var(--radius);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    letter-spacing: -.01em;
+}
+
+.my-tasks-btn-details:hover {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(79, 142, 247, 0.4);
+}
+
+/* ── Empty State ──────────────────────────────────────────────── */
+.my-tasks-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-3);
+}
+
+.my-tasks-empty-icon {
+    font-size: 40px;
+    margin-bottom: 12px;
+    opacity: .5;
+}
+
+.my-tasks-empty-text {
+    font-size: 13px;
+    margin: 0;
+}
+
+/* ── Loading ──────────────────────────────────────────────────── */
+.my-tasks-loading {
+    text-align: center;
+    padding: 24px;
+    color: var(--text-3);
+    font-size: 13px;
+}
+
+/* ── Modal Overlay ────────────────────────────────────────────── */
+.my-tasks-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, .6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 20px;
+    animation: fadeInDown .2s ease;
+}
+
+/* ── Modal ────────────────────────────────────────────────────── */
+.my-tasks-modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    max-width: 600px;
+    width: 100%;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+    animation: fadeInUp .25s ease;
+}
+
+.my-tasks-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--surface);
+    z-index: 10;
+}
+
+.my-tasks-modal-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: -.01em;
+}
+
+.my-tasks-modal-close {
+    background: none;
+    border: none;
+    color: var(--text-3);
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color var(--t);
+}
+
+.my-tasks-modal-close:hover {
+    color: var(--text-1);
+}
+
+.my-tasks-modal-body {
+    padding: 20px;
+}
+
+.my-tasks-modal-section {
+    margin-bottom: 20px;
+}
+
+.my-tasks-modal-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    display: block;
+    margin-bottom: 8px;
+}
+
+.my-tasks-modal-text {
+    font-size: 13px;
+    color: var(--text-1);
+    line-height: 1.6;
+    margin: 0;
+}
+
+.my-tasks-modal-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 16px;
+}
+
+@media (max-width: 500px) {
+    .my-tasks-modal-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.my-tasks-modal-item {
+    margin-bottom: 4px;
+}
+
+.my-tasks-modal-footer {
+    padding: 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.my-tasks-btn-modal-close {
+    padding: 8px 16px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    font-family: var(--sans);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--t);
+    letter-spacing: -.01em;
+}
+
+.my-tasks-btn-modal-close:hover {
+    background: #6a9eff;
+    box-shadow: 0 4px 12px rgba(79, 142, 247, .3);
+}
+
+/* ── Animations ───────────────────────────────────────────────── */
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

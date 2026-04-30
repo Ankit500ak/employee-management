@@ -6,6 +6,9 @@ import ChangePassword from './pages/ChangePassword/ChangePassword'
 import Dashboard from './pages/Dashboard/Dashboard'
 import EditRecord from './pages/EditRecord/EditRecord'
 import Login from './pages/Login/Login'
+import ManageTasks from './pages/ManageTasks/ManageTasks'
+import MyTasks from './pages/MyTasks/MyTasks'
+import Chat from './pages/Chat/Chat'
 import Register from './pages/Register/Register'
 import VerifyOTP from './pages/VerifyOTP/VerifyOTP'
 import { authStorage } from './utils/authStorage'
@@ -52,6 +55,36 @@ function App() {
                 element={
                     <ProtectedRoute>
                         <AdminImports />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/admin/tasks"
+                element={
+                    <ProtectedRoute>
+                        <ForcePasswordRoute>
+                            <ManageTasks />
+                        </ForcePasswordRoute>
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/my-tasks"
+                element={
+                    <ProtectedRoute>
+                        <ForcePasswordRoute>
+                            <MyTasks />
+                        </ForcePasswordRoute>
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/chat"
+                element={
+                    <ProtectedRoute>
+                        <ForcePasswordRoute>
+                            <Chat />
+                        </ForcePasswordRoute>
                     </ProtectedRoute>
                 }
             />

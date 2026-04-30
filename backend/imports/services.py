@@ -13,7 +13,7 @@ logger = logging.getLogger('imports')
 User = get_user_model()
 REQUIRED_COLUMNS = ['full_name', 'email', 'phone', 'address', 'dob']
 
-# Map common header variations to the canonical column names
+
 COLUMN_ALIASES = {
     'full_name': ['full_name', 'fullname', 'full name', 'name', 'employee name', 'employee_name', 'emp_name', 'emp name'],
     'email': ['email', 'email address', 'email_address', 'emailaddress', 'e-mail', 'mail'],
@@ -28,7 +28,6 @@ def _normalize_headers(raw_headers):
 
 
 def _map_headers(headers):
-    """Map raw header names to canonical column names using aliases."""
     mapped = list(headers)
     for canonical, aliases in COLUMN_ALIASES.items():
         for i, h in enumerate(headers):

@@ -4,7 +4,7 @@ import { login } from '../../services/authApi'
 import { authStorage } from '../../utils/authStorage'
 import './Login.css'
 
-/* ── Icons ────────────────────────────────────────────────────── */
+
 const IconEyeOpen = () => (
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
@@ -42,7 +42,7 @@ const IconArrow = () => (
     </svg>
 )
 
-/* ── Component ────────────────────────────────────────────────── */
+
 function Login() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')

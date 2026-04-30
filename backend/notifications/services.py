@@ -130,3 +130,85 @@ def send_credentials_email(recipient_email, login_id, temp_password, full_name='
         log_email(recipient_email, subject, 'FAILED', str(exc))
         logger.error('[EMAIL] ✗ Failed to send credentials to %s: %s', recipient_email, exc)
         return False
+
+
+def _build_task_assignment_html(full_name, task_title, task_description, assigner_name, task_url):
+    """Return a styled HTML email body for task assignment."""
+    name = full_name or 'User'
+    assigner = assigner_name or 'Someone'
+    return f"""\
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background:#0f1117;font-family:'Segoe UI',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#0f1117;padding:40px 20px;">
+<tr><td align="center">
+<table width="560" cellpadding="0" cellspacing="0" style="background:#141720;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.4);">
+  <tr><td style="height:4px;background:linear-gradient(90deg,#4f8ef7,#a78bfa,#4f8ef7);"></td></tr>
+  <tr><td style="padding:28px 40px 0;">
+    <h1 style="margin:0;font-size:22px;font-weight:600;color:#e8ecf5;">New Task Assigned</h1>
+    <p style="margin:8px 0 0;font-size:14px;color:#8b93ad;line-height:1.6;">
+      Hi {name}, {assigner} has assigned a new task to you.
+    </p>
+  </td></tr>
+  <tr><td style="padding:24px 40px;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#1a1e2e;border:1px solid #1f2437;border-radius:10px;">
+      <tr><td style="padding:20px 24px;">
+        <table width="100%" cellpadding="0" cellspacing="0">
+          <tr>
+            <td style="font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.1em;color:#4d5570;padding-bottom:6px;">Task Title</td>
+          </tr>
+          <tr>
+            <td style="font-family:'Segoe UI',Arial,sans-serif;font-size:15px;font-weight:600;color:#e8ecf5;padding-bottom:16px;">{task_title}</td>
+          </tr>
+          <tr>
+            <td style="font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.1em;color:#4d5570;padding-bottom:6px;">Description</td>
+          </tr>
+          <tr>
+            <td style="font-family:'Segoe UI',Arial,sans-serif;font-size:14px;color:#8b93ad;line-height:1.5;">{task_description}</td>
+          </tr>
+        </table>
+      </td></tr>
+    </table>
+  </td></tr>
+  <tr><td style="padding:0 40px 8px;" align="center">
+    <a href="{task_url}" style="display:inline-block;background:#4f8ef7;color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;padding:12px 36px;border-radius:8px;box-shadow:0 4px 16px rgba(79,142,247,.3);">
+      View Task &rarr;
+    </a>
+  </td></tr>
+  <tr><td style="padding:28px 40px 32px;">
+    <p style="margin:0;font-size:11px;color:#4d5570;line-height:1.5;">
+      This is an automated message.
+    </p>
+  </td></tr>
+</table>
+</td></tr>
+</table>
+</body>
+</html>"""
+
+
+def send_task_assignment_email(recipient_email, full_name, task_title, task_description, assigner_name):
+    subject = f'New Task Assigned: {task_title}'
+    task_url = getattr(settings, 'FRONTEND_URL', 'http://localhost:5173') + '/dashboard/tasks'
+
+    plain_body = (
+        f'Hi {full_name or "User"},\n\n'
+        f'{assigner_name or "Someone"} has assigned a new task to you.\n\n'
+        f'Task: {task_title}\n'
+        f'Description: {task_description}\n\n'
+        f'View your tasks at: {task_url}\n'
+    )
+    html_body = _build_task_assignment_html(full_name, task_title, task_description, assigner_name, task_url)
+
+    try:
+        logger.info('[EMAIL] Sending task assignment to %s', recipient_email)
+        msg = EmailMultiAlternatives(subject, plain_body, settings.DEFAULT_FROM_EMAIL, [recipient_email])
+        msg.attach_alternative(html_body, 'text/html')
+        msg.send(fail_silently=False)
+        log_email(recipient_email, subject, 'SENT')
+        return True
+    except Exception as exc:
+        log_email(recipient_email, subject, 'FAILED', str(exc))
+        logger.error('[EMAIL] ✗ Failed to send task assignment to %s: %s', recipient_email, exc)
+        return False

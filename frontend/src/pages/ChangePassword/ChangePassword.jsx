@@ -4,7 +4,7 @@ import { changePassword } from '../../services/authApi'
 import { authStorage } from '../../utils/authStorage'
 import './ChangePassword.css'
 
-/* ── Icons ────────────────────────────────────────────────────── */
+
 const IconEyeOpen = () => (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
@@ -28,7 +28,14 @@ const IconAlert = () => (
     </svg>
 )
 
-/* ── Password field with show/hide ───────────────────────────── */
+const IconArrowLeft = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+    </svg>
+)
+
+
 function PasswordField({ label, value, onChange, autoComplete }) {
     const [visible, setVisible] = useState(false)
 
@@ -58,7 +65,7 @@ function PasswordField({ label, value, onChange, autoComplete }) {
     )
 }
 
-/* ── Main component ───────────────────────────────────────────── */
+
 function ChangePassword() {
     const isFirstTime = authStorage.getMustChangePassword()
     const [oldPassword, setOldPassword] = useState('')
@@ -96,6 +103,15 @@ function ChangePassword() {
                 <div className="cp-card-bar" />
 
                 <div className="cp-card-body">
+                    {!isFirstTime && (
+                        <button 
+                            onClick={() => navigate('/dashboard')} 
+                            style={{ position: 'absolute', top: '16px', left: '16px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#64748b' }}
+                            title="Go Back"
+                        >
+                            <IconArrowLeft />
+                        </button>
+                    )}
                     <p className="cp-eyebrow">Account Security</p>
                     <h2 className="cp-title">{isFirstTime ? 'Set Your Password' : 'Change Password'}</h2>
                     <p className="cp-subtitle">

@@ -8,8 +8,27 @@ export const verifyOtp = (payload) => http.post('/auth/verify-otp/', payload)
 export const register = (payload) => http.post('/auth/register/', payload)
 export const me = () => http.get('/auth/me/')
 
-// Access requests
+
+export const getCreatedUsers = () => http.get('/auth/created-users/')
+
+
 export const requestAccess = () => http.post('/auth/access-request/')
 export const myAccessRequest = () => http.get('/auth/access-request/mine/')
 export const pendingAccessRequests = () => http.get('/auth/access-requests/pending/')
 export const resolveAccessRequest = (id, action) => http.post(`/auth/access-requests/${id}/resolve/`, { action })
+
+
+export const authApi = {
+    login,
+    logout,
+    changePassword,
+    requestOtp,
+    verifyOtp,
+    register,
+    me,
+    getCreatedUsers,
+    requestAccess,
+    myAccessRequest,
+    pendingAccessRequests,
+    resolveAccessRequest,
+}

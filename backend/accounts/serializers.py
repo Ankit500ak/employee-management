@@ -47,9 +47,11 @@ class RegisterSerializer(serializers.Serializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    parent_email = serializers.EmailField(source='parent.email', read_only=True)
+
     class Meta:
         model = User
-        fields = ['id', 'email', 'username', 'is_active', 'is_staff', 'is_verified', 'must_change_password']
+        fields = ['id', 'email', 'username', 'is_active', 'is_staff', 'is_verified', 'must_change_password', 'parent', 'parent_email']
 
 
 class AccessRequestSerializer(serializers.ModelSerializer):

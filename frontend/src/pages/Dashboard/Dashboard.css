@@ -252,7 +252,7 @@
 /* ── Stats ────────────────────────────────────────────────────── */
 .db-stats {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 16px;
     margin-bottom: 28px;
     animation: fadeInUp .35s ease;
@@ -894,6 +894,114 @@
     background: var(--danger-soft);
     border-color: rgba(239, 68, 68, .3);
     transform: translateY(-1px);
+}
+
+/* ── Created Users (admin) ────────────────────────────────────── */
+.db-created-users-section {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+}
+
+.db-created-users-heading {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-2);
+    margin: 0 0 14px;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+}
+
+.db-created-users-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.db-created-user-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    transition: border-color var(--t), box-shadow var(--t);
+}
+
+.db-created-user-item:hover {
+    border-color: var(--border-lit);
+    box-shadow: var(--shadow-sm);
+}
+
+.db-user-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.db-user-info {
+    min-width: 0;
+    flex-grow: 1;
+}
+
+.db-user-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-1);
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.db-user-email {
+    font-size: 12px;
+    color: var(--text-2);
+    margin: 2px 0 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.db-user-date {
+    font-size: 11px;
+    color: var(--text-3);
+    margin: 2px 0 0;
+    font-family: var(--mono);
+}
+
+.db-user-badge {
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.db-user-badge--verified {
+    background: var(--success-soft);
+    color: var(--success);
+    border: 1px solid rgba(34, 197, 94, .2);
+}
+
+.db-user-badge--pending {
+    background: var(--amber-soft);
+    color: var(--amber);
+    border: 1px solid rgba(245, 158, 11, .2);
 }
 
 /* ── Footer ───────────────────────────────────────────────────── */

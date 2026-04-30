@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { listImports, uploadImport } from '../../services/importApi'
 import './AdminImports.css'
 
-/* ── Icons ────────────────────────────────────────────────────── */
+
 const IconLogo = () => (
     <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
         <rect x="2" y="2" width="28" height="28" rx="8" stroke="currentColor" strokeWidth="1.5" />
@@ -109,7 +109,7 @@ const IconClock = () => (
     </svg>
 )
 
-/* ── Helpers ───────────────────────────────────────────────────── */
+
 function statusClass(s = '') {
     const l = s.toLowerCase()
     if (l === 'completed') return 'ai-status--completed'
@@ -138,8 +138,9 @@ function timeAgo(iso) {
     return `${Math.floor(hrs / 24)}d ago`
 }
 
-/* ── Component ────────────────────────────────────────────────── */
+
 function AdminImports() {
+    const navigate = useNavigate()
     const [file, setFile] = useState(null)
     const [jobs, setJobs] = useState([])
     const [error, setError] = useState('')
@@ -207,9 +208,9 @@ function AdminImports() {
                     <span className="ai-nav-section">Imports</span>
                 </div>
                 <div className="ai-nav-right">
-                    <Link className="ai-nav-back" to="/dashboard">
-                        <IconArrowLeft /> Dashboard
-                    </Link>
+                    <button className="ai-nav-back" onClick={() => navigate('/dashboard')} style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: '#6366f1', fontWeight: '500' }}>
+                        <IconArrowLeft /> Back
+                    </button>
                 </div>
             </nav>
 
@@ -280,13 +281,23 @@ function AdminImports() {
                                 <strong> phone</strong>, <strong>address</strong>, and <strong>dob</strong>.
                                 Each row creates a user account with auto-generated credentials.
                             </p>
-                            <button className="ai-btn-upload" onClick={onUpload} disabled={isUploading || !file}>
-                                {isUploading ? (
-                                    <><span className="ai-spinner" /> Processing…</>
-                                ) : (
-                                    <><IconUpload /> Upload &amp; Import</>
-                                )}
-                            </button>
+                            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                                <button className="ai-btn-upload" onClick={onUpload} disabled={isUploading || !file}>
+                                    {isUploading ? (
+                                        <><span className="ai-spinner" /> Processing…</>
+                                    ) : (
+                                        <><IconUpload /> Upload &amp; Import</>
+                                    )}
+                                </button>
+                                <a 
+                                    href="/import_template.xlsx" 
+                                    download 
+                                    className="ai-btn-upload" 
+                                    style={{ background: 'transparent', color: 'var(--primary)', border: '1px solid var(--primary)' }}
+                                >
+                                    <IconFile /> Download Template
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>

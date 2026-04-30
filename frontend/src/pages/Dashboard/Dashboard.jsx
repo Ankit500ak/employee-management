@@ -1,11 +1,18 @@
-import { useEffect, useRef, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { logout, me, myAccessRequest, pendingAccessRequests, requestAccess, resolveAccessRequest } from '../../services/authApi'
-import { deleteMyRecord, getMyRecord } from '../../services/recordApi'
-import { authStorage } from '../../utils/authStorage'
-import './Dashboard.css'
+const IconClipboard = () => (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+        <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+    </svg>
+)
+import { useEffect, useRef, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { logout, me, myAccessRequest, pendingAccessRequests, requestAccess, resolveAccessRequest, getCreatedUsers } from '../../services/authApi';
+import { deleteMyRecord, getMyRecord } from '../../services/recordApi';
+import { taskApi } from '../../services/taskApi';
+import { authStorage } from '../../utils/authStorage';
+import './Dashboard.css';
 
-/* ── Icons ────────────────────────────────────────────────────── */
+
 const IconLogo = () => (
     <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
         <rect x="2" y="2" width="28" height="28" rx="8" stroke="currentColor" strokeWidth="1.5" />
@@ -149,7 +156,7 @@ const IconClock = () => (
     </svg>
 )
 
-/* ── Helpers ───────────────────────────────────────────────────── */
+
 function initials(name = '') {
     return name.trim().split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?'
 }
@@ -179,411 +186,370 @@ function greetByTime() {
     return 'Good evening'
 }
 
-/* ── Component ────────────────────────────────────────────────── */
+
+
 function Dashboard() {
-    const [record, setRecord] = useState(null)
-    const [user, setUser] = useState(null)
-    const [error, setError] = useState('')
-    const [isLoading, setIsLoading] = useState(true)
-    const [isDeleting, setIsDeleting] = useState(false)
-    const [accessStatus, setAccessStatus] = useState(null)
-    const [pendingReqs, setPendingReqs] = useState([])
-    const [isRequesting, setIsRequesting] = useState(false)
-    const hasLoadedRef = useRef(false)
-    const navigate = useNavigate()
+    const [record, setRecord] = useState(null);
+    const [user, setUser] = useState(null);
+    const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(true);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [accessStatus, setAccessStatus] = useState(null);
+    const [pendingReqs, setPendingReqs] = useState([]);
+    const [isRequesting, setIsRequesting] = useState(false);
+    const [createdUsers, setCreatedUsers] = useState([]);
+    const [taskStats, setTaskStats] = useState(null);
+    const hasLoadedRef = useRef(false);
+    const navigate = useNavigate();
+
 
     const load = async () => {
-        setIsLoading(true)
+        setIsLoading(true);
         try {
-            const [recRes, meRes] = await Promise.allSettled([getMyRecord(), me()])
-            if (recRes.status === 'fulfilled') setRecord(recRes.value.data)
-            else if (recRes.reason?.response?.status === 404) setRecord(null)
-            else setError('Unable to load record.')
+            const [recRes, meRes, statsRes] = await Promise.allSettled([
+                getMyRecord(), 
+                me(),
+                taskApi.getDashboardStats()
+            ]);
+            
+            if (recRes.status === 'fulfilled') setRecord(recRes.value.data);
+            else if (recRes.reason?.response?.status === 404) setRecord(null);
+            else setError('Unable to load record.');
+
+            if (statsRes.status === 'fulfilled') setTaskStats(statsRes.value.data);
 
             if (meRes.status === 'fulfilled') {
-                const u = meRes.value.data
-                setUser(u)
-                // load access-request data after we know the role
+                const u = meRes.value.data;
+                setUser(u);
                 if (u.is_staff) {
                     try {
-                        const r = await pendingAccessRequests()
-                        setPendingReqs(r.data)
-                    } catch { /* ignore */ }
+                        const r = await pendingAccessRequests();
+                        setPendingReqs(r.data);
+                        try {
+                            const usersRes = await getCreatedUsers();
+                            setCreatedUsers(usersRes.data);
+                        } catch { }
+                    } catch { }
                 } else {
                     try {
-                        const r = await myAccessRequest()
-                        setAccessStatus(r.data)
-                    } catch { /* ignore */ }
+                        const r = await myAccessRequest();
+                        setAccessStatus(r.data);
+                    } catch { }
                 }
             }
         } catch {
-            setError('Unable to load data.')
+            setError('Unable to load data.');
         } finally {
-            setIsLoading(false)
+            setIsLoading(false);
         }
-    }
+    };
+
+    useEffect(() => {
+        if (hasLoadedRef.current) return;
+        hasLoadedRef.current = true;
+        load();
+    }, []);
+
+    const onDelete = async () => {
+        if (!window.confirm('Permanently delete your record?')) return;
+        setIsDeleting(true);
+        try {
+            await deleteMyRecord();
+            setRecord(null);
+        } catch {
+            setError('Failed to delete record.');
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
+    const onLogout = async () => {
+        try { await logout(); } catch { }
+        authStorage.clearAll();
+        navigate('/login');
+    };
 
     const onRequestAccess = async () => {
-        setIsRequesting(true)
+        setIsRequesting(true);
         try {
-            await requestAccess()
-            const r = await myAccessRequest()
-            setAccessStatus(r.data)
+            await requestAccess();
+            const r = await myAccessRequest();
+            setAccessStatus(r.data);
         } catch (err) {
-            const msg = err.response?.data?.detail || err.response?.data?.error || 'Failed to send request.'
-            setError(msg)
+            const msg = err.response?.data?.detail || err.response?.data?.error || 'Failed to send request.';
+            setError(msg);
         } finally {
-            setIsRequesting(false)
+            setIsRequesting(false);
         }
-    }
+    };
 
     const onResolve = async (id, action) => {
         try {
-            await resolveAccessRequest(id, action)
-            setPendingReqs(prev => prev.filter(r => r.id !== id))
+            await resolveAccessRequest(id, action);
+            setPendingReqs(prev => prev.filter(r => r.id !== id));
         } catch {
-            setError('Failed to resolve request.')
+            setError('Failed to resolve request.');
         }
-    }
-
-    useEffect(() => {
-        if (hasLoadedRef.current) return
-        hasLoadedRef.current = true
-        load()
-    }, [])
-
-    const onDelete = async () => {
-        if (!window.confirm('Permanently delete your record?')) return
-        setIsDeleting(true)
-        try {
-            await deleteMyRecord()
-            setRecord(null)
-        } catch {
-            setError('Failed to delete record.')
-        } finally {
-            setIsDeleting(false)
-        }
-    }
-
-    const onLogout = async () => {
-        try { await logout() } catch { /* ignore */ }
-        authStorage.clearAll()
-        navigate('/login')
-    }
+    };
 
     const today = new Date().toLocaleDateString('en-US', {
         weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-    })
-    const displayName = record?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'User'
+    });
+    const displayName = record?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'User';
+
 
     return (
-        <div className="db-shell">
-
-            {/* ── Navbar ── */}
-            <nav className="db-nav">
-                <div className="db-nav-left">
-                    <div className="db-nav-brand"><IconLogo /></div>
-                    <span className="db-nav-title">DataVault</span>
+        <div className="mt-shell">
+            <aside className="mt-sidebar">
+                <div className="mt-sidebar-brand">
+                    <span className="mt-brand-mark" />
+                    <span className="mt-brand-name">DataVault</span>
                 </div>
-                <div className="db-nav-right">
-                    {user && <span className="db-nav-email">{user.email}</span>}
-                    <div className="db-nav-avatar">
-                        {record ? initials(record.full_name) : (user?.email?.[0]?.toUpperCase() || '?')}
-                    </div>
-                    <button className="db-nav-logout" onClick={onLogout} title="Sign out">
-                        <IconLogout />
-                    </button>
-                </div>
-            </nav>
-
-            <main className="db-main">
-
-                {/* ── Welcome ── */}
-                <section className="db-welcome">
-                    <div>
-                        <h1 className="db-welcome-greeting">{greetByTime()}, {displayName}</h1>
-                        <p className="db-welcome-date">{today}</p>
-                    </div>
-                    {!isLoading && !record && (
-                        <Link className="db-btn-primary" to="/edit-record">
-                            <IconPlus /> Create Record
+                <nav className="mt-sidebar-nav">
+                    <Link className="mt-nav-item mt-nav-item--active" to="/dashboard">
+                        <IconUser /> Dashboard
+                    </Link>
+                    {user?.is_staff && (
+                        <Link className="mt-nav-item" to="/admin/tasks">
+                            <IconUpload /> Manage Tasks
                         </Link>
                     )}
-                </section>
+                    {user?.is_staff && (
+                        <Link className="mt-nav-item" to="/admin/imports">
+                            <IconUpload /> Admin Imports
+                        </Link>
+                    )}
+                    <Link className="mt-nav-item" to="/my-tasks">
+                        <IconClipboard /> My Tasks
+                    </Link>
+                    <Link className="mt-nav-item" to="/chat">
+                        <IconMail /> Chat
+                    </Link>
+                </nav>
+                <div className="mt-sidebar-stats">
+                    <div className="mt-stat">
+                        <span className="mt-stat-value">{createdUsers.length}</span>
+                        <span className="mt-stat-label">Users</span>
+                    </div>
+                    <div className="mt-stat">
+                        <span className="mt-stat-value">{pendingReqs.length}</span>
+                        <span className="mt-stat-label">Pending</span>
+                    </div>
+                </div>
+            </aside>
 
-                {/* ── Error ── */}
+            <main className="mt-main">
+                <header className="mt-topbar">
+                    <div>
+                        <h1 className="mt-page-title">Dashboard</h1>
+                        <p className="mt-page-date">{today}</p>
+                    </div>
+                    <button className="mt-btn mt-btn--primary" onClick={onLogout} title="Sign out">
+                        <IconLogout /> Logout
+                    </button>
+                </header>
+
                 {error && (
-                    <div className="db-toast db-toast-error">
-                        <IconAlert /><span>{error}</span>
-                        <button className="db-toast-close" onClick={() => setError('')}>&times;</button>
+                    <div className="mt-alert">
+                        <span>{error}</span>
+                        <button className="mt-alert-close" onClick={() => setError('')}>
+                            <IconTrash />
+                        </button>
                     </div>
                 )}
 
-                {/* ── Loading skeleton ── */}
-                {isLoading && (
-                    <div className="db-skeleton-wrap">
-                        <div className="db-skeleton-grid">
-                            {[1, 2, 3, 4].map(i => <div key={i} className="db-skeleton-stat" />)}
-                        </div>
-                        <div className="db-skeleton-content">
-                            <div className="db-skeleton-card" />
-                            <div className="db-skeleton-side" />
-                        </div>
-                    </div>
-                )}
-
-                {/* ── Stats row ── */}
-                {!isLoading && (
-                    <div className="db-stats">
-                        <div className="db-stat">
-                            <div className="db-stat-icon db-stat-icon--profile"><IconUser /></div>
-                            <div className="db-stat-info">
-                                <p className="db-stat-label">Profile</p>
-                                <p className="db-stat-value">{record ? 'Active' : 'Empty'}</p>
+                {taskStats && (
+                    <div className="mt-content-grid" style={{ marginBottom: '24px', gridTemplateColumns: '1fr' }}>
+                        <section className="mt-panel mt-panel--wide">
+                            <div className="mt-panel-header">
+                                <h2 className="mt-panel-title">
+                                    <IconClipboard /> Task Overview
+                                </h2>
                             </div>
-                            <span className={`db-stat-badge ${record ? 'db-stat-badge--green' : 'db-stat-badge--dim'}`}>
-                                {record ? '●' : '○'}
-                            </span>
-                        </div>
-                        <div className="db-stat">
-                            <div className="db-stat-icon db-stat-icon--shield"><IconShield /></div>
-                            <div className="db-stat-info">
-                                <p className="db-stat-label">Account</p>
-                                <p className="db-stat-value">{user?.is_verified ? 'Verified' : 'Pending'}</p>
-                            </div>
-                            <span className={`db-stat-badge ${user?.is_verified ? 'db-stat-badge--green' : 'db-stat-badge--amber'}`}>
-                                {user?.is_verified ? <IconCheck /> : '!'}
-                            </span>
-                        </div>
-                        <div className="db-stat">
-                            <div className="db-stat-icon db-stat-icon--calendar"><IconCalendar /></div>
-                            <div className="db-stat-info">
-                                <p className="db-stat-label">Created</p>
-                                <p className="db-stat-value">{record ? timeAgo(record.created_at) : '—'}</p>
-                            </div>
-                        </div>
-                        <div className="db-stat">
-                            <div className="db-stat-icon db-stat-icon--clock"><IconClock /></div>
-                            <div className="db-stat-info">
-                                <p className="db-stat-label">Updated</p>
-                                <p className="db-stat-value">{record ? timeAgo(record.updated_at) : '—'}</p>
-                            </div>
-                        </div>
-                        {user?.is_staff && (
-                            <div className="db-stat">
-                                <div className="db-stat-icon db-stat-icon--requests"><IconShield /></div>
-                                <div className="db-stat-info">
-                                    <p className="db-stat-label">Requests</p>
-                                    <p className="db-stat-value">{pendingReqs.length} pending</p>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '20px', marginBottom: taskStats.overdue_tasks?.length > 0 ? '32px' : '0' }}>
+                                <div style={{ background: 'var(--bg)', padding: '24px', borderRadius: 'var(--radius)', textAlign: 'center', border: '1px solid var(--border)' }}>
+                                    <div style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--text-1)', marginBottom: '8px' }}>{taskStats.total}</div>
+                                    <div style={{ fontSize: '13px', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Tasks</div>
                                 </div>
-                                <span className={`db-stat-badge ${pendingReqs.length > 0 ? 'db-stat-badge--amber' : 'db-stat-badge--green'}`}>
-                                    {pendingReqs.length > 0 ? '!' : <IconCheck />}
-                                </span>
+                                <div style={{ background: 'var(--bg)', padding: '24px', borderRadius: 'var(--radius)', textAlign: 'center', border: '1px solid var(--border)', borderBottom: '3px solid var(--warning)' }}>
+                                    <div style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--text-1)', marginBottom: '8px' }}>{taskStats.pending}</div>
+                                    <div style={{ fontSize: '13px', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Pending</div>
+                                </div>
+                                <div style={{ background: 'var(--bg)', padding: '24px', borderRadius: 'var(--radius)', textAlign: 'center', border: '1px solid var(--border)', borderBottom: '3px solid var(--accent)' }}>
+                                    <div style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--text-1)', marginBottom: '8px' }}>{taskStats.in_progress}</div>
+                                    <div style={{ fontSize: '13px', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>In Progress</div>
+                                </div>
+                                <div style={{ background: 'var(--bg)', padding: '24px', borderRadius: 'var(--radius)', textAlign: 'center', border: '1px solid var(--border)', borderBottom: '3px solid var(--success)' }}>
+                                    <div style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--text-1)', marginBottom: '8px' }}>{taskStats.completed}</div>
+                                    <div style={{ fontSize: '13px', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Completed</div>
+                                </div>
                             </div>
-                        )}
+                            
+                            {taskStats.overdue_tasks?.length > 0 && (
+                                <div>
+                                    <h3 style={{ color: 'var(--danger)', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', fontSize: '16px', paddingBottom: '12px', borderBottom: '1px solid var(--border)' }}>
+                                        <IconAlert /> Overdue Tasks
+                                    </h3>
+                                    <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '12px' }}>
+                                        {taskStats.overdue_tasks.map(task => (
+                                            <li key={task.id} style={{ background: 'var(--danger-soft)', border: '1px solid rgba(239, 68, 68, 0.2)', padding: '16px', borderRadius: 'var(--radius)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <div>
+                                                    <strong style={{ display: 'block', color: '#fca5a5', marginBottom: '6px', fontSize: '15px' }}>{task.title}</strong>
+                                                    <span style={{ fontSize: '13px', color: 'var(--danger)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                        <IconCalendar /> Due: {formatDate(task.due_date)}
+                                                    </span>
+                                                </div>
+                                                <Link to="/my-tasks" className="mt-btn mt-btn--sm" style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#fca5a5', border: '1px solid rgba(239, 68, 68, 0.2)' }}>View</Link>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+                        </section>
                     </div>
                 )}
 
-                {/* ── Content grid ── */}
-                {!isLoading && (
-                    <div className="db-content">
-
-                        {/* ── Profile Card ── */}
+                <div className="mt-content-grid">
+                    <section className="mt-panel">
+                        <div className="mt-panel-header">
+                            <h2 className="mt-panel-title">
+                                <IconUser /> Profile
+                            </h2>
+                        </div>
                         {record ? (
-                            <div className="db-profile-card">
-                                <div className="db-profile-bar" />
-                                <div className="db-profile-header">
-                                    <div className="db-profile-avatar">{initials(record.full_name)}</div>
-                                    <div className="db-profile-identity">
-                                        <h2 className="db-profile-name">{record.full_name}</h2>
-                                        {user && <p className="db-profile-email">{user.email}</p>}
-                                        <div className="db-profile-badges">
-                                            <span className="db-badge db-badge--green">Active</span>
-                                            <span className="db-badge db-badge--dim">{record.source}</span>
-                                        </div>
+                            <div style={{ padding: '18px' }}>
+                                <div className="db-profile-avatar" style={{ margin: '0 auto 16px' }}>{initials(record.full_name)}</div>
+                                <h3 style={{ textAlign: 'center', marginBottom: 8 }}>{record.full_name}</h3>
+                                <div style={{ textAlign: 'center', color: 'var(--text-3)', fontSize: 13 }}>{user?.email}</div>
+                                <div style={{ marginTop: 18 }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                        <div><b>Phone:</b> {record.phone || '—'}</div>
+                                        <div><b>Address:</b> {record.address || '—'}</div>
+                                        <div><b>DOB:</b> {formatDate(record.dob)}</div>
                                     </div>
                                 </div>
-
-                                <div className="db-profile-details">
-                                    <div className="db-detail">
-                                        <div className="db-detail-icon"><IconMail /></div>
-                                        <div>
-                                            <p className="db-detail-label">Email</p>
-                                            <p className="db-detail-value">{user?.email || '—'}</p>
-                                        </div>
-                                    </div>
-                                    <div className="db-detail">
-                                        <div className="db-detail-icon"><IconPhone /></div>
-                                        <div>
-                                            <p className="db-detail-label">Phone</p>
-                                            <p className="db-detail-value">{record.phone || '—'}</p>
-                                        </div>
-                                    </div>
-                                    <div className="db-detail">
-                                        <div className="db-detail-icon"><IconMap /></div>
-                                        <div>
-                                            <p className="db-detail-label">Address</p>
-                                            <p className="db-detail-value">{record.address || '—'}</p>
-                                        </div>
-                                    </div>
-                                    <div className="db-detail">
-                                        <div className="db-detail-icon"><IconCake /></div>
-                                        <div>
-                                            <p className="db-detail-label">Date of Birth</p>
-                                            <p className="db-detail-value">{formatDate(record.dob)}</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="db-profile-meta">
-                                    <span>Created {formatDate(record.created_at)}</span>
-                                    <span className="db-meta-dot">&middot;</span>
-                                    <span>Updated {formatDate(record.updated_at)}</span>
-                                </div>
-
-                                <div className="db-profile-actions">
-                                    <Link className="db-btn-primary" to="/edit-record">
-                                        <IconEdit /> Edit Record
+                                <div style={{ marginTop: 18, display: 'flex', gap: 10 }}>
+                                    <Link className="mt-btn mt-btn--primary" to="/edit-record">
+                                        <IconEdit /> Edit
                                     </Link>
-                                    <button className="db-btn-danger" onClick={onDelete} disabled={isDeleting}>
+                                    <button className="mt-btn mt-btn--danger" onClick={onDelete} disabled={isDeleting}>
                                         <IconTrash /> {isDeleting ? 'Deleting…' : 'Delete'}
                                     </button>
                                 </div>
                             </div>
                         ) : (
-                            <div className="db-empty-card">
-                                <div className="db-empty-visual">
-                                    <div className="db-empty-circle"><IconDatabase /></div>
-                                </div>
-                                <h3 className="db-empty-title">No record found</h3>
-                                <p className="db-empty-sub">Create your personal record to get started with DataVault.</p>
-                                <Link className="db-btn-primary" to="/edit-record">
+                            <div className="mt-empty">
+                                <span className="mt-empty-icon">📄</span>
+                                <p>No record found</p>
+                                <Link className="mt-btn mt-btn--primary" to="/edit-record">
                                     <IconPlus /> Create My Record
                                 </Link>
                             </div>
                         )}
+                    </section>
 
-                        {/* ── Quick Actions ── */}
-                        <div className="db-actions-panel">
-                            <h3 className="db-actions-title">Quick Actions</h3>
-                            <div className="db-actions-list">
-                                {record && (
-                                    <Link className="db-action-item" to="/edit-record">
-                                        <div className="db-action-icon db-action-icon--edit"><IconEdit /></div>
-                                        <div className="db-action-text">
-                                            <p className="db-action-name">Edit Profile</p>
-                                            <p className="db-action-desc">Update your personal information</p>
-                                        </div>
-                                        <IconArrowRight />
-                                    </Link>
-                                )}
-                                <Link className="db-action-item" to="/change-password">
-                                    <div className="db-action-icon db-action-icon--key"><IconKey /></div>
-                                    <div className="db-action-text">
-                                        <p className="db-action-name">Change Password</p>
-                                        <p className="db-action-desc">Update your account password</p>
-                                    </div>
-                                    <IconArrowRight />
-                                </Link>
-                                {user?.is_staff && (
-                                    <Link className="db-action-item" to="/admin/imports">
-                                        <div className="db-action-icon db-action-icon--upload"><IconUpload /></div>
-                                        <div className="db-action-text">
-                                            <p className="db-action-name">Admin Imports</p>
-                                            <p className="db-action-desc">Import records from Excel files</p>
-                                        </div>
-                                        <IconArrowRight />
-                                    </Link>
-                                )}
-
-                                {/* ── Access Request (non-admin) ── */}
-                                {user && !user.is_staff && !accessStatus?.status && (
-                                    <button
-                                        className="db-action-item db-action-item--btn"
-                                        onClick={onRequestAccess}
-                                        disabled={isRequesting}
-                                    >
-                                        <div className="db-action-icon db-action-icon--access"><IconShield /></div>
-                                        <div className="db-action-text">
-                                            <p className="db-action-name">{isRequesting ? 'Sending…' : 'Request Admin Access'}</p>
-                                            <p className="db-action-desc">Ask your admin for elevated privileges</p>
-                                        </div>
-                                        <IconArrowRight />
-                                    </button>
-                                )}
-                                {user && !user.is_staff && accessStatus?.status === 'PENDING' && (
-                                    <div className="db-action-item db-action-item--status">
-                                        <div className="db-action-icon db-action-icon--pending"><IconClock /></div>
-                                        <div className="db-action-text">
-                                            <p className="db-action-name">Access Request Pending</p>
-                                            <p className="db-action-desc">Sent to {accessStatus.approver_email}</p>
-                                        </div>
-                                        <span className="db-access-badge db-access-badge--pending">Pending</span>
-                                    </div>
-                                )}
-                                {user && !user.is_staff && accessStatus?.status === 'DENIED' && (
-                                    <button
-                                        className="db-action-item db-action-item--btn"
-                                        onClick={onRequestAccess}
-                                        disabled={isRequesting}
-                                    >
-                                        <div className="db-action-icon db-action-icon--denied"><IconShield /></div>
-                                        <div className="db-action-text">
-                                            <p className="db-action-name">{isRequesting ? 'Sending…' : 'Request Again'}</p>
-                                            <p className="db-action-desc">Denied by {accessStatus.approver_email} — try again</p>
-                                        </div>
-                                        <IconArrowRight />
-                                    </button>
-                                )}
-                                {user && !user.is_staff && accessStatus?.status === 'APPROVED' && (
-                                    <div className="db-action-item db-action-item--status">
-                                        <div className="db-action-icon db-action-icon--approved"><IconCheck /></div>
-                                        <div className="db-action-text">
-                                            <p className="db-action-name">Admin Access Granted</p>
-                                            <p className="db-action-desc">Approved by {accessStatus.approver_email}</p>
-                                        </div>
-                                        <span className="db-access-badge db-access-badge--approved">Approved</span>
-                                    </div>
-                                )}
+                    {user?.is_staff && (
+                        <section className="mt-panel mt-panel--wide">
+                            <div className="mt-panel-header">
+                                <h2 className="mt-panel-title">
+                                    <IconUser /> Your Created Users
+                                </h2>
+                                <span className="mt-count">{createdUsers.length}</span>
                             </div>
-
-                            {/* ── Pending Requests (admin) ── */}
-                            {user?.is_staff && pendingReqs.length > 0 && (
-                                <div className="db-pending-section">
-                                    <h4 className="db-pending-heading">Requests</h4>
-                                    <div className="db-pending-list">
-                                        {pendingReqs.map(req => (
-                                            <div key={req.id} className="db-pending-item">
-                                                <div className="db-pending-info">
-                                                    <p className="db-pending-email">{req.requester_email}</p>
-                                                    <p className="db-pending-date">{formatDate(req.created_at)}</p>
-                                                </div>
-                                                <div className="db-pending-actions">
-                                                    <button className="db-btn-tick" onClick={() => onResolve(req.id, 'approve')} title="Approve">
-                                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg>
-                                                    </button>
-                                                    <button className="db-btn-cross" onClick={() => onResolve(req.id, 'deny')} title="Deny">
-                                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
-                                                    </button>
-                                                </div>
+                            {createdUsers.length === 0 ? (
+                                <div className="mt-empty">
+                                    <span className="mt-empty-icon">👤</span>
+                                    <p>No users created yet</p>
+                                </div>
+                            ) : (
+                                <ul className="mt-user-list">
+                                    {createdUsers.map((u) => (
+                                        <li key={u.id} className="mt-user-item">
+                                            <div className="mt-avatar">{initials(u.username || u.email)}</div>
+                                            <div className="mt-user-info">
+                                                <strong className="mt-user-name">{u.username}</strong>
+                                                <span className="mt-user-email">{u.email}</span>
                                             </div>
-                                        ))}
+                                            <span className={`db-user-badge ${u.is_verified ? 'db-user-badge--verified' : 'db-user-badge--pending'}`}>
+                                                {u.is_verified ? 'Verified' : 'Pending'}
+                                            </span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </section>
+                    )}
+
+                    {user?.is_staff && pendingReqs.length > 0 && (
+                        <section className="mt-panel mt-panel--wide">
+                            <div className="mt-panel-header">
+                                <h2 className="mt-panel-title">
+                                    <IconShield /> Pending Requests
+                                </h2>
+                                <span className="mt-count">{pendingReqs.length}</span>
+                            </div>
+                            <div className="db-pending-list">
+                                {pendingReqs.map(req => (
+                                    <div key={req.id} className="db-pending-item">
+                                        <div className="db-pending-info">
+                                            <p className="db-pending-email">{req.requester_email}</p>
+                                            <p className="db-pending-date">{formatDate(req.created_at)}</p>
+                                        </div>
+                                        <div className="db-pending-actions">
+                                            <button className="db-btn-tick" onClick={() => onResolve(req.id, 'approve')} title="Approve">
+                                                <IconCheck />
+                                            </button>
+                                            <button className="db-btn-cross" onClick={() => onResolve(req.id, 'deny')} title="Deny">
+                                                <IconTrash />
+                                            </button>
+                                        </div>
                                     </div>
+                                ))}
+                            </div>
+                        </section>
+                    )}
+
+                    {user && !user.is_staff && (
+                        <section className="mt-panel mt-panel--wide">
+                            <div className="mt-panel-header">
+                                <h2 className="mt-panel-title">
+                                    <IconShield /> Access Request
+                                </h2>
+                            </div>
+                            {!accessStatus?.status && (
+                                <button
+                                    className="mt-btn mt-btn--primary"
+                                    onClick={onRequestAccess}
+                                    disabled={isRequesting}
+                                >
+                                    <IconShield /> {isRequesting ? 'Sending…' : 'Request Admin Access'}
+                                </button>
+                            )}
+                            {accessStatus?.status === 'PENDING' && (
+                                <div className="mt-alert">
+                                    <IconClock /> Access Request Pending (Sent to {accessStatus.approver_email})
                                 </div>
                             )}
-                        </div>
-
-                    </div>
-                )}
-
+                            {accessStatus?.status === 'DENIED' && (
+                                <button
+                                    className="mt-btn mt-btn--danger"
+                                    onClick={onRequestAccess}
+                                    disabled={isRequesting}
+                                >
+                                    <IconShield /> {isRequesting ? 'Sending…' : 'Request Again'} (Denied by {accessStatus.approver_email})
+                                </button>
+                            )}
+                            {accessStatus?.status === 'APPROVED' && (
+                                <div className="mt-alert" style={{ background: 'var(--success-soft)', color: 'var(--success)' }}>
+                                    <IconCheck /> Admin Access Granted (Approved by {accessStatus.approver_email})
+                                </div>
+                            )}
+                        </section>
+                    )}
+                </div>
             </main>
-
-            {/* ── Footer ── */}
-            <footer className="db-footer">
-                <p>DataVault &copy; {new Date().getFullYear()}</p>
-            </footer>
         </div>
-    )
+    );
 }
 
 export default Dashboard
