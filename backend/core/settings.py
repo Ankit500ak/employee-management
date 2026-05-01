@@ -1,10 +1,10 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-from dotenv import load_dotenv
-import dj_database_url
+load_dotenv(BASE_DIR / '.env')
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'unsafe-secret')
 DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
@@ -102,6 +102,10 @@ if _frontend_url and not _frontend_url.startswith('http'):
 CORS_ALLOWED_ORIGINS = [_frontend_url]
 
 EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
+HTTP_EMAIL_API_URL = os.getenv('HTTP_EMAIL_API_URL', '')
+
+if HTTP_EMAIL_API_URL:
+    EMAIL_BACKEND = 'core.mail.HttpEmailBackend'
 ANYMAIL = {
     "RESEND_API_KEY": os.getenv("RESEND_API_KEY", ""),
     "SENDGRID_API_KEY": os.getenv("SENDGRID_API_KEY", ""),
